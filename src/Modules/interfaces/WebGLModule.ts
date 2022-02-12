@@ -1,4 +1,4 @@
-import { ModuleSettings } from "../data-structures/webgl";
+import { ModuleSettings } from "../../data-structures/webgl";
 
 export interface WebGLModule {
   render(): void;
@@ -6,13 +6,13 @@ export interface WebGLModule {
 }
 
 interface WebGLModuleCtor {
-  new (gl: WebGL2RenderingContext, settings: ModuleSettings): WebGLModule;
+  new (canvas: HTMLCanvasElement, settings: ModuleSettings): WebGLModule;
 }
 
 export function createWebGLModule(
   ctor: WebGLModuleCtor,
-  gl: WebGL2RenderingContext,
+  canvas: HTMLCanvasElement,
   settings: ModuleSettings
 ): WebGLModule {
-  return new ctor(gl, settings);
+  return new ctor(canvas, settings);
 }

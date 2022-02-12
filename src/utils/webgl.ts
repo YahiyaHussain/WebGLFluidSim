@@ -37,3 +37,50 @@ export function createProgram(
   }
   console.error("Shader program borked");
 }
+
+export function compileShaders(
+  gl: WebGL2RenderingContext,
+  vert_src: string,
+  frag_src: string
+): WebGLProgram | undefined {
+  const vertexShader = createShader(gl, gl.VERTEX_SHADER, vert_src);
+  const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, frag_src);
+  if (!vertexShader) {
+    const err = "failed to make vertex shader";
+    console.error(err);
+    alert(err);
+    return;
+  }
+  if (!fragmentShader) {
+    const err = "failed to make vertex shader";
+    console.error(err);
+    alert(err);
+    return;
+  }
+
+  const program = createProgram(gl, vertexShader, fragmentShader);
+  if (!program) {
+    const err = "failed to make shader program";
+    console.error(err);
+    alert(err);
+    return;
+  }
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw "Program link failed with: " + gl.getProgramInfoLog(program);
+  }
+  return program;
+}
+
+export function getContext(
+  canvas: HTMLCanvasElement
+): WebGL2RenderingContext | null {
+  const gl = canvas.getContext("webgl2");
+  if (gl === null) {
+    alert(
+      "Unable to initialize WebGL. Your browser or machine may not support it."
+    );
+    return null;
+  }
+  return gl;
+}

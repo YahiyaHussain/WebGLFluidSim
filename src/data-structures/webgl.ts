@@ -21,7 +21,7 @@ export class UVPoint {
   }
 }
 
-export function addUVPointsToBuffer(
+export function addUVPointsToPositionBuffer(
   gl: WebGL2RenderingContext,
   buffer: WebGLBuffer,
   points: UVPoint[]
@@ -34,6 +34,45 @@ export function addUVPointsToBuffer(
     positions.push(clipPoint.y);
   }
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+}
+
+export function addClipPointsToPositionBuffer(
+  gl: WebGL2RenderingContext,
+  buffer: WebGLBuffer,
+  points: ClipPoint[]
+) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  let positions = [];
+  for (let point of points) {
+    positions.push(point.x);
+    positions.push(point.y);
+  }
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+}
+
+export function addUVPointsToTexCoordBuffer(
+  gl: WebGL2RenderingContext,
+  buffer: WebGLBuffer,
+  points: UVPoint[]
+) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  let positions = [];
+  for (let point of points) {
+    positions.push(point.x);
+    positions.push(point.y);
+  }
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+}
+
+export class MouseInfo {
+  constructor(
+    public mouseDown: boolean,
+    public mouseJustUp: boolean,
+    public mousePos: [number, number]
+  ) {}
 }
 
 export class ModuleSettings {
@@ -42,4 +81,13 @@ export class ModuleSettings {
     public res_y: number,
     public grid_spacing: number
   ) {}
+}
+
+export enum Module {
+  Basic,
+  Conway,
+  Grid,
+  Ring,
+  Sequencer,
+  Sine,
 }

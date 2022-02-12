@@ -1,12 +1,12 @@
-import { WebGLModule } from "../interfaces/WebGLModule";
-import basic_vert from "../shaders/basic.vert?raw";
-import texture_vert from "../shaders/texture.vert?raw";
-import sine_frag from "../shaders/sine.frag?raw";
-import grid_frag from "../shaders/grid.frag?raw";
-import { createShader, createProgram } from "../utils/webgl";
+import { WebGLModule } from "./interfaces/WebGLModule";
+import basic_vert from "../Kernels/shaders/basic.vert?raw";
+import texture_vert from "../Kernels/shaders/texture.vert?raw";
+import sine_frag from "../Kernels/shaders/sine.frag?raw";
+import grid_frag from "../Kernels/shaders/grid.frag?raw";
+import { createShader, createProgram, getContext } from "../utils/webgl";
 import {
   UVPoint,
-  addUVPointsToBuffer,
+  addUVPointsToPositionBuffer,
   ModuleSettings,
 } from "../data-structures/webgl";
 
@@ -18,7 +18,11 @@ export class GridModule implements WebGLModule {
   private program: WebGLProgram;
   private gridProgram: WebGLProgram;
 
-  constructor(gl: WebGL2RenderingContext, settings: ModuleSettings) {
+  constructor(canvas: HTMLCanvasElement, settings: ModuleSettings) {
+    const gl = getContext(canvas);
+    if (!gl) {
+      throw "Could not create webgl2 context";
+    }
     this.gl = gl;
     this.width = settings.res_x;
     this.height = settings.res_y;
@@ -99,7 +103,7 @@ export class GridModule implements WebGLModule {
       return;
     }
 
-    addUVPointsToBuffer(this.gl, positionBuffer, points);
+    addUVPointsToPositionBuffer(this.gl, positionBuffer, points);
 
     var positionAttributeLocation = this.gl.getAttribLocation(
       this.program,
@@ -141,7 +145,7 @@ export class GridModule implements WebGLModule {
       return;
     }
 
-    addUVPointsToBuffer(this.gl, positionBuffer, points);
+    addUVPointsToPositionBuffer(this.gl, positionBuffer, points);
 
     var positionAttributeLocation = this.gl.getAttribLocation(
       this.gridProgram,

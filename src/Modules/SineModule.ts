@@ -1,25 +1,58 @@
-import { WebGLModule } from "../interfaces/WebGLModule";
-import basic_vert from "../shaders/basic.vert?raw";
-import basic_frag from "../shaders/basic.frag?raw";
-import { createShader, createProgram } from "../utils/webgl";
+import { WebGLModule } from "./interfaces/WebGLModule";
+import basic_vert from "../Kernels/shaders/basic.vert?raw";
+import basic_frag from "../Kernels/shaders/sine.frag?raw";
+import { createShader, createProgram, getContext } from "../utils/webgl";
 import {
   UVPoint,
-  addUVPointsToBuffer,
+  addUVPointsToPositionBuffer,
   ModuleSettings,
 } from "../data-structures/webgl";
 
-export class BasicModule implements WebGLModule {
+export class SineModule implements WebGLModule {
   protected gl: WebGL2RenderingContext;
   private width: number;
   private height: number;
-  constructor(gl: WebGL2RenderingContext, settings: ModuleSettings) {
+  private program: WebGLProgram;
+
+  private time: number;
+  constructor(canvas: HTMLCanvasElement, settings: ModuleSettings) {
+    const gl = getContext(canvas);
+    if (!gl) {
+      throw "Could not create webgl2 context";
+    }
     this.gl = gl;
-    this.width = settings.res_x;
-    this.height = settings.res_y;
+    this.time = 0;
+    this.gl = gl;
+    this.width = gl.canvas.clientWidth;
+    this.height = gl.canvas.clientHeight;
+
+    let program = this.setupShaders();
+    if (!program) {
+      throw "Could not create shader program";
+    }
+    this.program = program;
     this.setup();
   }
 
   private setup() {
+    this.gl.clearColor(0.1, 0.5, 0.8, 1.0);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+    this.gl.canvas.width = this.width;
+    this.gl.canvas.height = this.height;
+
+    let triangle1 = [new UVPoint(0, 0), new UVPoint(1, 0), new UVPoint(1, 1)];
+    let triangle2 = [new UVPoint(0, 1), new UVPoint(0, 0), new UVPoint(1, 1)];
+
+    this.setupGeometry(triangle1.concat(triangle2), this.program);
+
+    this.gl.viewport(0, 0, this.width, this.height);
+    // Clear the canvas
+    this.gl.clearColor(0, 0, 0, 0);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+  }
+
+  private setupShaders(): WebGLProgram | undefined {
     const vertexShader = createShader(
       this.gl,
       this.gl.VERTEX_SHADER,
@@ -50,25 +83,10 @@ export class BasicModule implements WebGLModule {
       alert(err);
       return;
     }
-
-    this.gl.clearColor(0.1, 0.5, 0.8, 1.0);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
-    this.gl.canvas.width = this.width;
-    this.gl.canvas.height = this.height;
-
-    let triangle1 = [new UVPoint(0, 0), new UVPoint(1, 0), new UVPoint(1, 1)];
-    let triangle2 = [new UVPoint(0, 1), new UVPoint(0, 0), new UVPoint(1, 1)];
-
-    this.set_geometry(triangle1.concat(triangle2), program);
-
-    this.gl.viewport(0, 0, this.width, this.height);
-    // Clear the canvas
-    this.gl.clearColor(0, 0, 0, 0);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    return program;
   }
 
-  private set_geometry(points: UVPoint[], program: WebGLProgram) {
+  private setupGeometry(points: UVPoint[], program: WebGLProgram) {
     this.gl.useProgram(program);
     var viewportCoordLocation = this.gl.getUniformLocation(
       program,
@@ -84,7 +102,7 @@ export class BasicModule implements WebGLModule {
       return;
     }
 
-    addUVPointsToBuffer(this.gl, positionBuffer, points);
+    addUVPointsToPositionBuffer(this.gl, positionBuffer, points);
 
     var positionAttributeLocation = this.gl.getAttribLocation(
       program,
@@ -113,8 +131,16 @@ export class BasicModule implements WebGLModule {
     var primitiveType = this.gl.TRIANGLES;
     var offset = 0;
     var count = 6;
+
+    var viewportCoordLocation = this.gl.getUniformLocation(
+      this.program,
+      "u_angle_rad"
+    );
+    this.time = (this.time + 1) % 300;
+    this.gl.uniform1f(viewportCoordLocation, (2 * Math.PI * this.time) / 300);
     this.gl.drawArrays(primitiveType, offset, count);
   }
+
   debugRender(): void {
     this.render();
   }
