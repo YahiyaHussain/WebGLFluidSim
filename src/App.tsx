@@ -66,7 +66,7 @@ function App() {
   const [showGrid, setShowGrid] = useState(false);
   const [res, setRes] = useState(30);
   const [spacing, setSpacing] = useState(1);
-  const [module, setModule] = useState(Module.Sequencer);
+  const [module, setModule] = useState(Module.Basic);
 
   useEffect(() => {
     const settings = new ModuleSettings(

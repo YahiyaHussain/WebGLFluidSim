@@ -29,6 +29,17 @@ export default function UI(props) {
     spacing,
     canvasRef,
   } = props;
+
+  useEffect(() => {
+    const subpath = window.location.pathname.split("/")[2];
+    const Subpath = subpath.charAt(0).toUpperCase() + subpath.slice(1);
+    const moduleType: Module = Module[Subpath];
+    console.log(Subpath, moduleType);
+    if (moduleType) {
+      props.setModule(moduleType);
+    }
+  });
+
   return (
     <div
       style={{
@@ -91,7 +102,8 @@ export default function UI(props) {
               label="Module"
               style={{ color: "white" }}
               onChange={(e) => {
-                props.setModule(e.target.value as Module);
+                window.location.pathname =
+                  "/WebGLFluidSim/" + Module[e.target.value as Module];
               }}
             >
               {(Object.keys(Module) as Array<keyof typeof Module>)
