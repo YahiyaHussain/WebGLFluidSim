@@ -1,85 +1,83 @@
 import { WebGLModule } from "./interfaces/WebGLModule";
 
-import { UVPoint, ModuleSettings } from "../data-structures/webgl";
-import { SineKernel } from "../Kernels/SineKernel";
-import { AddKernel } from "../Kernels/AddKernel";
+import { DataShader } from "../Shaders/DataShader";
 import {
-  BasicSequence,
-  BasicSequenceContinue,
-} from "../Sequence/BasicSequence";
-import { DataKernel } from "../Kernels/DataKernel";
-import { MultiplyKernel } from "../Kernels/MultiplyKernel";
-import { DataMultiplyKernel } from "../Kernels/DataMultiplyKernel";
-import { getContext } from "../utils/webgl";
-import { ConwayKernel } from "../Kernels/ConwayKernel";
+  createWebGL2Context,
+  getColorTextureSettings,
+  ModuleSettings,
+} from "../utils/webgl";
+import { Debounced } from "../Misc/Throttled";
+import { ScreenGeometry } from "../Geometries/ScreenGeometry";
+import { ParallelRenderSequence } from "../Sequence/ParallelRenderSequence";
+import { TextureRenderShader } from "../Shaders/TextureRenderShader";
+import { ConwayShader } from "../Shaders/ConwayShader";
+import { DataMultiplyShader } from "../Shaders/DataMultiplyShader";
+import { IsGeometry } from "../Geometries/interfaces/IsGeometry";
 
 export class ConwayModule implements WebGLModule {
   protected gl: WebGL2RenderingContext;
-  private width: number;
-  private height: number;
-  private points: UVPoint[];
-  private dataKernel: DataKernel;
-  private sineKernel: SineKernel;
-  private multiplyKernel: MultiplyKernel;
-  private dataMultiplyKernel: DataMultiplyKernel;
-  private conwayKernel: ConwayKernel;
-  private basicSequence: BasicSequence;
-  private sequence: BasicSequenceContinue;
+
+  private geometry: IsGeometry;
+  private dataShader: DataShader;
+  private conwayShader: ConwayShader;
+  private textureRenderShader: TextureRenderShader;
+  private dataMultiplyShader: DataMultiplyShader;
+
+  private conwayDebounced: Debounced;
+  private drawDebounced: Debounced;
+  private eraseDebounced: Debounced;
+
+  private renderSeq: ParallelRenderSequence;
+
   private paused: boolean = true;
-  private limited: boolean = false;
-  private first: boolean = true;
 
   constructor(canvas: HTMLCanvasElement, settings: ModuleSettings) {
     this.mouseEvents(canvas);
-    const gl = getContext(canvas);
-    if (!gl) {
-      throw "Could not create webgl2 context";
-    }
+    this.gl = createWebGL2Context(canvas);
 
-    this.gl = gl;
-    this.width = settings.res_x;
-    this.height = settings.res_y;
+    this.gl.canvas.width = settings.res_x;
+    this.gl.canvas.height = settings.res_y;
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-    const triangle1 = [new UVPoint(0, 0), new UVPoint(1, 0), new UVPoint(0, 1)];
-    const triangle2 = [new UVPoint(0, 1), new UVPoint(1, 0), new UVPoint(1, 1)];
-    this.points = triangle1.concat(triangle2);
-    this.sineKernel = new SineKernel(
+    this.geometry = new ScreenGeometry(this.gl);
+    this.dataShader = new DataShader(this.gl);
+    this.conwayShader = new ConwayShader(this.gl);
+    this.textureRenderShader = new TextureRenderShader(this.gl, 0);
+    this.dataMultiplyShader = new DataMultiplyShader(this.gl, 0, 1);
+
+    this.renderSeq = new ParallelRenderSequence(
       this.gl,
-      this.points,
-      this.width,
-      this.height
-    );
-    this.multiplyKernel = new MultiplyKernel(
-      this.gl,
-      this.points,
-      this.width,
-      this.height
-    );
-    this.dataKernel = new DataKernel(
-      this.gl,
-      this.points,
-      this.width,
-      this.height
-    );
-    this.dataMultiplyKernel = new DataMultiplyKernel(
-      this.gl,
-      this.points,
-      this.width,
-      this.height
-    );
-    this.conwayKernel = new ConwayKernel(
-      this.gl,
-      this.points,
-      this.width,
-      this.height
+      this.geometry,
+      getColorTextureSettings(this.gl)
     );
 
-    this.setup();
+    this.renderSeq.apply(this.dataShader);
+    this.renderSeq.render(this.textureRenderShader, null);
 
-    this.basicSequence = new BasicSequence(this.gl, this.points, settings);
-    this.sequence = this.basicSequence.apply(
-      this.dataKernel.data(new Array(4 * this.width * this.height).fill(255))
-    );
+    this.conwayDebounced = new Debounced(() => {
+      if (!this.paused) {
+        this.renderSeq.apply(this.conwayShader);
+        this.renderSeq.render(this.textureRenderShader, null);
+      }
+    }, 10);
+
+    this.drawDebounced = new Debounced((ev: MouseEvent) => {
+      this.drawPoint(
+        ev.clientX,
+        ev.clientY,
+        canvas.clientWidth,
+        canvas.clientHeight
+      );
+    }, 100);
+
+    this.eraseDebounced = new Debounced((ev: MouseEvent) => {
+      this.erasePoint(
+        ev.clientX,
+        ev.clientY,
+        canvas.clientWidth,
+        canvas.clientHeight
+      );
+    }, 100);
   }
 
   private drawPoint(
@@ -88,66 +86,79 @@ export class ConwayModule implements WebGLModule {
     total_x: number,
     total_y: number
   ) {
-    const data = new Array(4 * this.width * this.height).fill(255);
-
-    const coord_x = Math.floor((this.width * pixel_x) / total_x);
-    const coord_y = Math.floor((this.height * pixel_y) / total_y);
-
-    const ind = (coord_x + coord_y * this.width) * 4;
+    const width = this.gl.canvas.width;
+    const height = this.gl.canvas.height;
+    const data = new Array(4 * width * height).fill(255);
+    const coord_x = Math.floor((width * pixel_x) / total_x);
+    const coord_y = Math.floor((height * pixel_y) / total_y);
+    const ind = (coord_x + coord_y * width) * 4;
     data[ind] = 0;
     data[ind + 1] = 0;
     data[ind + 2] = 0;
+    this.renderSeq.apply(this.dataMultiplyShader.data(data));
+    this.renderSeq.render(this.textureRenderShader, null);
+  }
 
-    this.dataMultiplyKernel.data(data);
-    this.sequence.apply(this.dataMultiplyKernel).render();
-    console.log(`${coord_x}, ${coord_y}`);
+  private erasePoint(
+    pixel_x: number,
+    pixel_y: number,
+    total_x: number,
+    total_y: number
+  ) {
+    const width = this.gl.canvas.width;
+    const height = this.gl.canvas.height;
+    const data = new Array(4 * width * height).fill(255);
+    const coord_x = Math.floor((width * pixel_x) / total_x);
+    const coord_y = Math.floor((height * pixel_y) / total_y);
+    const ind = (coord_x + coord_y * width) * 4;
+    data[ind] = 255;
+    data[ind + 1] = 255;
+    data[ind + 2] = 255;
+    this.renderSeq.apply(this.dataMultiplyShader.data(data));
+    this.renderSeq.render(this.textureRenderShader, null);
+  }
+
+  private clear() {
+    const width = this.gl.canvas.width;
+    const height = this.gl.canvas.height;
+    const data = new Array(4 * width * height).fill(255);
+    this.renderSeq.apply(this.dataMultiplyShader.data(data));
+    this.renderSeq.render(this.textureRenderShader, null);
   }
 
   private mouseEvents(canvas: HTMLCanvasElement) {
-    canvas.onclick = (ev: MouseEvent) => {
-      this.drawPoint(
-        ev.clientX,
-        ev.clientY,
-        canvas.clientWidth,
-        canvas.clientHeight
-      );
+    canvas.onmousedown = (ev_down: MouseEvent) => {
+      this.drawDebounced.run(ev_down);
+      canvas.onmousemove = (ev: MouseEvent) => {
+        if (ev_down.button == 0 && !ev_down.ctrlKey) {
+          this.drawDebounced.run(ev);
+        } else {
+          this.eraseDebounced.run(ev);
+        }
+      };
     };
-
-    canvas.addEventListener("contextmenu", (event: MouseEvent) => {
-      console.log(event.button);
-    });
-
-    window.addEventListener("keydown", (event: KeyboardEvent) => {
+    canvas.onmouseup = (ev: MouseEvent) => {
+      canvas.onmousemove = null;
+    };
+    canvas.oncontextmenu = (ev: MouseEvent) => {
+      this.eraseDebounced.run(ev);
+      return false;
+    };
+    window.onkeydown = (event: KeyboardEvent) => {
+      if (event.key == "c") {
+        console.log("clear!");
+        this.clear();
+      }
       if (event.key == " ") {
         this.paused = !this.paused;
-        this.sequence.apply(this.conwayKernel).render();
+        console.log(this.paused ? "pause!" : "play!");
       }
-    });
+    };
   }
-
-  private setup() {
-    this.gl.canvas.width = this.width;
-    this.gl.canvas.height = this.height;
-    this.gl.viewport(0, 0, this.width, this.height);
-  }
-
   render() {
-    if (this.first) {
-      this.sequence.apply(this.conwayKernel).render();
-      this.first = false;
-    }
-    if (!this.paused) {
-      if (!this.limited) {
-        this.sequence.apply(this.conwayKernel).render();
-        this.limited = true;
-        setTimeout(() => {
-          this.limited = false;
-        }, 100);
-      }
-    }
-    // this.sequence.apply(this.dataMultiplyKernel).render();
+    this.conwayDebounced.run();
   }
   debugRender(): void {
-    this.sequence.render();
+    // this.sequence.render();
   }
 }

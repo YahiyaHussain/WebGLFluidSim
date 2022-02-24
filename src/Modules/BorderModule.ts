@@ -1,30 +1,34 @@
 import { WebGLModule } from "./interfaces/WebGLModule";
+
 import { getContext, ModuleSettings } from "../utils/webgl";
-import { SpiralShader } from "../Shaders/SpiralShader";
 import { IsGeometry } from "../Geometries/interfaces/IsGeometry";
-import { ScreenGeometry } from "../Geometries/ScreenGeometry";
 import { IsShader } from "../Shaders/interfaces/IsShader";
+import { BorderGeometry } from "../Geometries/BorderGeometry";
+import { BorderlessScreenGeometry } from "../Geometries/BorderlessScreenGeometry";
 import { SineShader } from "../Shaders/SineShader";
 
-export class SineModule implements WebGLModule {
+export class BorderModule implements WebGLModule {
   protected gl: WebGL2RenderingContext;
   private width: number;
   private height: number;
-  private shader: IsShader;
-  private geometry: IsGeometry;
+  private skinGeometry: IsGeometry;
+  private coreGeometry: IsGeometry;
+  private skinShader: IsShader;
+  private coreShader: IsShader;
 
   constructor(canvas: HTMLCanvasElement, settings: ModuleSettings) {
     const gl = getContext(canvas);
     if (!gl) {
       throw "Could not create webgl2 context";
     }
-
     this.gl = gl;
     this.width = settings.res_x;
     this.height = settings.res_y;
 
-    this.geometry = new ScreenGeometry(gl);
-    this.shader = new SineShader(gl, 4000);
+    this.skinGeometry = new BorderGeometry(gl);
+    this.coreGeometry = new BorderlessScreenGeometry(gl);
+    this.skinShader = new SineShader(gl, 4000);
+    this.coreShader = new SineShader(gl, 6000);
 
     this.setup();
   }
@@ -36,9 +40,8 @@ export class SineModule implements WebGLModule {
   }
 
   render() {
-    this.geometry.draw(this.shader, null);
+    this.coreGeometry.draw(this.coreShader, null);
+    this.skinGeometry.draw(this.skinShader, null);
   }
-  debugRender(): void {
-    this.geometry.draw(this.shader, null);
-  }
+  debugRender(): void {}
 }

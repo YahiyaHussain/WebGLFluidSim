@@ -1,9 +1,3 @@
-import "./App.css";
-import React, { useEffect, useState, useRef } from "react";
-import { BasicModule } from "./Modules/BasicModule";
-import { WebGLModule } from "./Modules/interfaces/WebGLModule";
-import { SineModule } from "./Modules/SineModule";
-import { GridModule } from "./Modules/GridModule";
 import {
   Accordion,
   AccordionDetails,
@@ -17,8 +11,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { Module, ModuleSettings } from "./data-structures/webgl";
-import { SequencerModule } from "./Modules/SequencerModule";
+import { useEffect } from "react";
+import { ModuleType } from "./utils/webgl";
 
 export default function UI(props) {
   const {
@@ -31,10 +25,12 @@ export default function UI(props) {
   } = props;
 
   useEffect(() => {
-    const subpath = window.location.pathname.split("/")[2];
+    if (!window.location.hash) {
+      return;
+    }
+    const subpath = window.location.hash.split("/")[1];
     const Subpath = subpath.charAt(0).toUpperCase() + subpath.slice(1);
-    const moduleType: Module = Module[Subpath];
-    console.log(Subpath, moduleType);
+    const moduleType: ModuleType = ModuleType[Subpath];
     if (moduleType) {
       props.setModule(moduleType);
     }
@@ -72,7 +68,7 @@ export default function UI(props) {
             sx={{ width: "50%" }}
             value={res}
             min={1}
-            max={150}
+            max={1200}
             step={1}
             onChange={(e: Event, v: number | number[]) =>
               onChangeRes(v as number)
@@ -102,14 +98,15 @@ export default function UI(props) {
               label="Module"
               style={{ color: "white" }}
               onChange={(e) => {
-                window.location.pathname =
-                  "/WebGLFluidSim/" + Module[e.target.value as Module];
+                window.location.hash =
+                  "#/" + ModuleType[e.target.value as ModuleType];
+                props.setModule(e.target.value as ModuleType);
               }}
             >
-              {(Object.keys(Module) as Array<keyof typeof Module>)
+              {(Object.keys(ModuleType) as Array<keyof typeof ModuleType>)
                 .filter((key) => isNaN(Number(key)))
                 .map((key) => (
-                  <MenuItem key={key} value={Module[key]}>
+                  <MenuItem key={key} value={ModuleType[key]}>
                     {key}
                   </MenuItem>
                 ))}

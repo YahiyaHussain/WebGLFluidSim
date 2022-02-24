@@ -3,14 +3,12 @@ import { getContext, ModuleSettings } from "../utils/webgl";
 import { SpiralShader } from "../Shaders/SpiralShader";
 import { IsGeometry } from "../Geometries/interfaces/IsGeometry";
 import { ScreenGeometry } from "../Geometries/ScreenGeometry";
-import { IsShader } from "../Shaders/interfaces/IsShader";
-import { SineShader } from "../Shaders/SineShader";
 
-export class SineModule implements WebGLModule {
+export class SpiralModule implements WebGLModule {
   protected gl: WebGL2RenderingContext;
   private width: number;
   private height: number;
-  private shader: IsShader;
+  private spiralShader: SpiralShader;
   private geometry: IsGeometry;
 
   constructor(canvas: HTMLCanvasElement, settings: ModuleSettings) {
@@ -24,7 +22,7 @@ export class SineModule implements WebGLModule {
     this.height = settings.res_y;
 
     this.geometry = new ScreenGeometry(gl);
-    this.shader = new SineShader(gl, 4000);
+    this.spiralShader = new SpiralShader(gl);
 
     this.setup();
   }
@@ -36,9 +34,9 @@ export class SineModule implements WebGLModule {
   }
 
   render() {
-    this.geometry.draw(this.shader, null);
+    this.geometry.draw(this.spiralShader, null);
   }
   debugRender(): void {
-    this.geometry.draw(this.shader, null);
+    this.geometry.draw(this.spiralShader, null);
   }
 }

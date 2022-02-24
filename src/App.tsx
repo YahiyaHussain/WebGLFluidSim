@@ -1,15 +1,8 @@
 import "./App.css";
 import React, { useEffect, useState } from "react";
-import { BasicModule } from "./Modules/BasicModule";
 import { WebGLModule } from "./Modules/interfaces/WebGLModule";
-import { SineModule } from "./Modules/SineModule";
-import { GridModule } from "./Modules/GridModule";
-import { ModuleSettings } from "./data-structures/webgl";
-import { SequencerModule } from "./Modules/SequencerModule";
-import { RingModule } from "./Modules/RingModule";
 import UI from "./UI";
-import { ConwayModule } from "./Modules/ConwayModule";
-import { Module } from "./data-structures/webgl";
+import { getModule, ModuleSettings, ModuleType } from "./utils/webgl";
 
 function setupCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -37,36 +30,13 @@ function setupCanvas(
   return () => cancelAnimationFrame(animRef.current);
 }
 
-function getModule(
-  canvas: HTMLCanvasElement,
-  moduleType: Module,
-  settings: ModuleSettings
-): WebGLModule {
-  switch (moduleType) {
-    case Module.Basic:
-      return new BasicModule(canvas, settings);
-    case Module.Conway:
-      return new ConwayModule(canvas, settings);
-    case Module.Grid:
-      return new GridModule(canvas, settings);
-    case Module.Ring:
-      return new RingModule(canvas, settings);
-    case Module.Sequencer:
-      return new SequencerModule(canvas, settings);
-    case Module.Sine:
-      return new SineModule(canvas, settings);
-    default:
-      return new BasicModule(canvas, settings);
-  }
-}
-
 function App() {
   let canvasRef = React.useRef<HTMLCanvasElement>(null);
   let animRef = React.useRef(-1);
   const [showGrid, setShowGrid] = useState(false);
-  const [res, setRes] = useState(30);
+  const [res, setRes] = useState(100);
   const [spacing, setSpacing] = useState(1);
-  const [module, setModule] = useState(Module.Basic);
+  const [module, setModule] = useState(ModuleType.Conway);
 
   useEffect(() => {
     const settings = new ModuleSettings(
@@ -74,10 +44,8 @@ function App() {
       res,
       spacing
     );
-    console.log(`x: ${settings.res_x}`, `y: ${settings.res_y}`);
     const createModule = (canvas: HTMLCanvasElement) =>
       getModule(canvas, module, settings);
-    console.log("settings.grid_spacing", settings.grid_spacing);
     return setupCanvas(canvasRef, animRef, createModule, showGrid);
   }, [canvasRef, showGrid, res, spacing, module]);
 
