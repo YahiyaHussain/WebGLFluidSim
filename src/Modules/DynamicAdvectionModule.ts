@@ -41,9 +41,10 @@ export class DynamicAdvectionModule implements WebGLModule {
     this.setup();
 
     this.drawDebounced = new Debounced((ev: MouseEvent) => {
+      var rect = canvas.getBoundingClientRect();
       this.drawPoint(
-        ev.clientX,
-        ev.clientY,
+        ev.clientX - rect.left,
+        ev.clientY - rect.top,
         canvas.clientWidth,
         canvas.clientHeight
       );

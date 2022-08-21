@@ -62,11 +62,18 @@ export class ConwayModule implements WebGLModule {
     }, 10);
 
     this.drawDebounced = new Debounced((ev: MouseEvent) => {
+      var rect = canvas.getBoundingClientRect();
       this.drawPoint(
-        ev.clientX,
-        ev.clientY,
+        ev.clientX - rect.left,
+        ev.clientY - rect.top,
         canvas.clientWidth,
+        // -
+        //   parseFloat(canvas.style.marginLeft) -
+        //   parseFloat(canvas.style.marginRight),
         canvas.clientHeight
+        // -
+        // parseFloat(canvas.style.marginTop) -
+        // parseFloat(canvas.style.marginBottom)
       );
     }, 100);
 

@@ -22,10 +22,10 @@ void main() {
   vec2 deriv_coord = vec2(-clip_coord.x + 2.*clip_coord.y, -5.*clip_coord.x);
 
   float angle = atan(deriv_coord.y, deriv_coord.x);
-  float magn = length(deriv_coord) /5.;
+  float magn = length(deriv_coord)*0.3;
   angle = angle > 0. ? angle : angle + 2.*PI;
 
-  color = vec4(hsv2rgb(vec3(angle/ (2.*PI), 0.59, 0.73)), magn);
+  color = vec4(hsv2rgb(vec3(angle/ (2.*PI), 0.59, 0.9*magn + 0.35)), 1.);
 
   float third = 1./3.;
   float twothird = 2./3.;

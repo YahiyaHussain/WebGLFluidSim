@@ -37,9 +37,10 @@ export class StaticAdvectionModule implements WebGLModule {
     this.setup();
 
     this.drawDebounced = new Debounced((ev: MouseEvent) => {
+      var rect = canvas.getBoundingClientRect();
       this.drawPoint(
-        ev.clientX,
-        ev.clientY,
+        ev.clientX - rect.left,
+        ev.clientY - rect.top,
         canvas.clientWidth,
         canvas.clientHeight
       );
@@ -107,7 +108,7 @@ export class StaticAdvectionModule implements WebGLModule {
               dyeAdvectionShader.velocityTexture(spiralFloatTexture)
             );
             this.dyeRenderSeq.render(new TextureRenderShader(this.gl, 0), null);
-          }, 25);
+          }, 20);
         }
       );
     };

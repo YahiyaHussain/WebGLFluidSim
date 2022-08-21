@@ -45,13 +45,14 @@ export class DrawVelocityModule implements WebGLModule {
     this.setup();
 
     this.drawDebounced = new Debounced((ev: MouseEvent) => {
+      var rect = canvas.getBoundingClientRect();
       this.drawPoint(
-        ev.clientX,
-        ev.clientY,
+        ev.clientX - rect.left,
+        ev.clientY - rect.top,
         canvas.clientWidth,
         canvas.clientHeight
       );
-    }, 100);
+    }, 50);
 
     this.mouseEvents(canvas);
 
@@ -195,10 +196,10 @@ export class DrawVelocityModule implements WebGLModule {
         // const red = Math.sin(angle) * 255;
         // const green = Math.cos(angle) * 255;
         // const blue = Math.sin(angle) * Math.cos(angle) * 255;
-        console.log("coords", [coord_x, coord_y], this.lastCoords, "velocity", [
-          ((coord_x - this.lastCoords[0]) / width) * 200,
-          -((coord_y - this.lastCoords[1]) / height) * 200,
-        ]);
+        // console.log("coords", [coord_x, coord_y], this.lastCoords, "velocity", [
+        //   ((coord_x - this.lastCoords[0]) / width) * 200,
+        //   -((coord_y - this.lastCoords[1]) / height) * 200,
+        // ]);
         data[ind] = ((coord_x - this.lastCoords[0]) / width) * 10;
         data[ind + 1] = -((coord_y - this.lastCoords[1]) / height) * 10;
         data[ind + 2] = 0;

@@ -117,8 +117,9 @@ export default function UI(props) {
       <canvas
         ref={canvasRef}
         style={{
-          width: "100vw",
-          height: "100vh",
+          margin: "auto",
+          width: `${Math.min(window.innerWidth, window.innerHeight)}px`,
+          height: `${Math.min(window.innerWidth, window.innerHeight)}px`,
           backgroundColor: "grey",
           imageRendering: "pixelated",
         }}
