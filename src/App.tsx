@@ -40,7 +40,8 @@ function App() {
 
   useEffect(() => {
     const settings = new ModuleSettings(
-      Math.round((res * window.innerWidth) / window.innerHeight),
+      // Math.round((res * window.innerWidth) / window.innerHeight),
+      res,
       res,
       spacing
     );
