@@ -68,7 +68,7 @@ export default function UI(props) {
             sx={{ width: "50%" }}
             value={res}
             min={1}
-            max={1200}
+            max={window.innerWidth * window.devicePixelRatio}
             step={1}
             onChange={(e: Event, v: number | number[]) =>
               onChangeRes(v as number)

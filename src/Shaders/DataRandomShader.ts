@@ -3,6 +3,10 @@ import textureVert from "./src/texture.vert?raw";
 import {
   compileShaders,
   createTexture,
+  getColorTextureSettings,
+  getFloatTextureSettings,
+  initializeTexture,
+  TextureType,
   useTexture,
   WrapType,
 } from "../utils/webgl";
@@ -40,7 +44,7 @@ export class DataRandomShader extends TextureShader {
     return this;
   }
 
-  data(dataList: number[]) {
+  data(dataList: number[], textureType: TextureType = TextureType.Color) {
     if (dataList.length != this.dataLen) {
       throw `data list was found to have length: ${dataList.length}, but was expected to have 4 x width x height: ${this.dataLen}`;
     }
@@ -48,20 +52,19 @@ export class DataRandomShader extends TextureShader {
     if (this._dataTexture) {
       this.gl.deleteTexture(this._dataTexture);
     }
-    const _data = new Uint8Array(dataList);
     this._dataTexture = createTexture(this.gl);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this._dataTexture);
-    this.gl.texImage2D(
-      this.gl.TEXTURE_2D,
-      0,
-      this.gl.RGBA,
-      this.gl.canvas.width,
-      this.gl.canvas.height,
-      0,
-      this.gl.RGBA,
-      this.gl.UNSIGNED_BYTE,
-      _data
-    );
+
+    switch (textureType) {
+      case TextureType.Color:
+        var _data: ArrayBufferView = new Uint8Array(dataList);
+        var textureSettings = getColorTextureSettings(this.gl);
+        break;
+      case TextureType.Float:
+        var _data: ArrayBufferView = new Float32Array(dataList);
+        var textureSettings = getFloatTextureSettings(this.gl);
+    }
+    initializeTexture(this.gl, this._dataTexture, textureSettings, _data);
 
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,

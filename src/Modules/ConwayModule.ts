@@ -29,7 +29,7 @@ export class ConwayModule implements WebGLModule {
 
   private renderSeq: ParallelRenderSequence;
 
-  private paused: boolean = true;
+  private paused: boolean = false;
 
   constructor(canvas: HTMLCanvasElement, settings: ModuleSettings) {
     this.mouseEvents(canvas);

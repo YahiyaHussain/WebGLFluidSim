@@ -26,6 +26,28 @@ out vec4 color;
 //     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 // }
 
+vec4 f4texRECTbilerp(sampler2D tex, vec2 s)
+{
+  // https://www.omnicalculator.com/math/bilinear-interpolation#bilinear-interpolation-example equation
+  // https://godotengine.org/qa/28151/how-to-check-color-of-adjacent-pixels-in-fragment-shader get pixel size
+  // want to use the textureSize to get the pixel index by flooring it
+  // then subtract 0.5, floor, add 0.5 and you will get the x boundary pixels, do for y and you have the for corners and can get the coefficients
+  // then make sure the texture is sampled with 0-1 based tex coords and stuff
+  vec2 unit_coord = 1. / vec2(textureSize(tex, 0)) / 2.;
+  vec4 st;
+  st.xy = floor(s - unit_coord) + unit_coord;
+  st.zw = st.xy + 1.;
+ 
+  vec2 t = s - st.xy; //interpolating factors
+   
+  vec4 tex11 = texture(tex, st.xy);
+  vec4 tex21 = texture(tex, st.zy);
+  vec4 tex12 = texture(tex, st.xw);
+  vec4 tex22 = texture(tex, st.zw);
+
+  // bilinear interpolation
+  return mix(mix(tex11, tex21, t.x), mix(tex12, tex22, t.x), t.y);
+}
 void main() {
   vec4 texture_output = texture(u_velocity_texture, v_texcoord);
   // float angle = .x;
@@ -48,4 +70,5 @@ void main() {
 
 
   color = texture(u_velocity_texture, old_pos);
+  // color = f4texRECTbilerp(u_velocity_texture, old_pos);
 }

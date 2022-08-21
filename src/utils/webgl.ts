@@ -8,6 +8,8 @@ import { BorderModule } from "../Modules/BorderModule";
 import { SineModule } from "../Modules/SineModule";
 import { SpiralModule } from "../Modules/SpiralModule";
 import { StaticAdvectionModule } from "../Modules/StaticAdvectionModule";
+import { DrawVelocityModule } from "../Modules/DrawVelocityModule";
+import { SierpinskiCarpetModule } from "../Modules/SierpinskiCarpetModule";
 
 export function createShader(
   gl: WebGL2RenderingContext,
@@ -486,6 +488,13 @@ export enum ModuleType {
   Spiral,
   StaticAdvection,
   DynamicAdvection,
+  DrawVelocity,
+  SierpinskiCarpet,
+}
+
+export enum TextureType {
+  Color,
+  Float,
 }
 
 export function getModule(
@@ -506,6 +515,10 @@ export function getModule(
       return new StaticAdvectionModule(canvas, settings);
     case ModuleType.DynamicAdvection:
       return new DynamicAdvectionModule(canvas, settings);
+    case ModuleType.DrawVelocity:
+      return new DrawVelocityModule(canvas, settings);
+    case ModuleType.SierpinskiCarpet:
+      return new SierpinskiCarpetModule(canvas, settings);
     default:
       return new ConwayModule(canvas, settings);
   }
@@ -559,7 +572,8 @@ export function getColorTextureSettings(
 export function initializeTexture(
   gl: WebGL2RenderingContext,
   texture: WebGLTexture,
-  textureSettings: TextureSettings
+  textureSettings: TextureSettings,
+  data: ArrayBufferView | null = null
 ) {
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(
@@ -571,6 +585,6 @@ export function initializeTexture(
     textureSettings.border,
     textureSettings.format,
     textureSettings.type,
-    null
+    data
   );
 }
