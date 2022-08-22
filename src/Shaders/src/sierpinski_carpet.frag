@@ -5,7 +5,6 @@ precision highp float;
 uniform vec2 u_viewportCoord;
 out vec4 color;
 #define PI 3.1415926538
-#define ITERATIONS 10
 
 
 vec3 hsv2rgb(vec3 c)

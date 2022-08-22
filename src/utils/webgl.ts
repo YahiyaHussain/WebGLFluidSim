@@ -10,6 +10,7 @@ import { SpiralModule } from "../Modules/SpiralModule";
 import { StaticAdvectionModule } from "../Modules/StaticAdvectionModule";
 import { DrawVelocityModule } from "../Modules/DrawVelocityModule";
 import { SierpinskiCarpetModule } from "../Modules/SierpinskiCarpetModule";
+import { MetaballsModule } from "../Modules/MetaballsModule";
 
 export function createShader(
   gl: WebGL2RenderingContext,
@@ -490,6 +491,7 @@ export enum ModuleType {
   DynamicAdvection,
   DrawVelocity,
   SierpinskiCarpet,
+  Metaballs,
 }
 
 export enum TextureType {
@@ -519,6 +521,8 @@ export function getModule(
       return new DrawVelocityModule(canvas, settings);
     case ModuleType.SierpinskiCarpet:
       return new SierpinskiCarpetModule(canvas, settings);
+    case ModuleType.Metaballs:
+      return new MetaballsModule(canvas, settings);
     default:
       return new ConwayModule(canvas, settings);
   }
