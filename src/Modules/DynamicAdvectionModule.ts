@@ -56,6 +56,9 @@ export class DynamicAdvectionModule implements WebGLModule {
 
     geometry.draw(new BlackShader(this.gl), null);
   }
+  getInstructions(): string {
+    return "Paste in an image and watch it explode!";
+  }
 
   private mouseEvents(canvas: HTMLCanvasElement) {
     canvas.onmousedown = (ev_down: MouseEvent) => {

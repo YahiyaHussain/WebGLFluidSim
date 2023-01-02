@@ -11,6 +11,7 @@ import { StaticAdvectionModule } from "../Modules/StaticAdvectionModule";
 import { DrawVelocityModule } from "../Modules/DrawVelocityModule";
 import { SierpinskiCarpetModule } from "../Modules/SierpinskiCarpetModule";
 import { MetaballsModule } from "../Modules/MetaballsModule";
+import { BezierModule } from "../Modules/BezierModule";
 
 export function createShader(
   gl: WebGL2RenderingContext,
@@ -413,10 +414,31 @@ export class ClipPoint {
 export class UVPoint {
   constructor(readonly x: number, readonly y: number) {
     if (x < 0 || x > 1 || y < 0 || y > 1) {
-      throw "constructed invalid clip point";
+      throw "constructed invalid uv point";
     }
     this.x = x;
     this.y = y;
+  }
+
+  public static get zero(): UVPoint {
+    return new UVPoint(0, 0);
+  }
+
+  public lerpTo(end: UVPoint, lerpFactor: number): UVPoint {
+    const newX = this.x + lerpFactor * (end.x - this.x);
+    const newY = this.y + lerpFactor * (end.y - this.y);
+    return new UVPoint(newX, newY);
+  }
+  public incrementBy(deltaX: number, deltaY: number): UVPoint {
+    let newX = this.x + deltaX;
+    newX = newX > 1 ? 1 : newX;
+    newX = newX < 0 ? 0 : newX;
+
+    let newY = this.y + deltaY;
+    newY = newY > 1 ? 1 : newY;
+    newY = newY < 0 ? 0 : newY;
+
+    return new UVPoint(newX, newY);
   }
 }
 
@@ -492,6 +514,7 @@ export enum ModuleType {
   DrawVelocity,
   SierpinskiCarpet,
   Metaballs,
+  Bezier,
 }
 
 export enum TextureType {
@@ -523,6 +546,8 @@ export function getModule(
       return new SierpinskiCarpetModule(canvas, settings);
     case ModuleType.Metaballs:
       return new MetaballsModule(canvas, settings);
+    case ModuleType.Bezier:
+      return new BezierModule(canvas, settings);
     default:
       return new ConwayModule(canvas, settings);
   }

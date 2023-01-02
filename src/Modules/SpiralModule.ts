@@ -26,6 +26,9 @@ export class SpiralModule implements WebGLModule {
 
     this.setup();
   }
+  getInstructions(): string {
+    return "Look a spiral!";
+  }
 
   private setup() {
     this.gl.canvas.width = this.width;

@@ -32,6 +32,9 @@ export class BorderModule implements WebGLModule {
 
     this.setup();
   }
+  getInstructions(): string {
+    return "There's a border around the screen!";
+  }
 
   private setup() {
     this.gl.canvas.width = this.width;

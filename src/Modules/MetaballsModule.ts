@@ -29,6 +29,9 @@ export class MetaballsModule implements WebGLModule {
 
     this.setup();
   }
+  getInstructions(): string {
+    return "Look! Metaballs!";
+  }
 
   private setup() {
     this.gl.canvas.width = this.width;

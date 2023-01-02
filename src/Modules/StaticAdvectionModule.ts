@@ -52,6 +52,9 @@ export class StaticAdvectionModule implements WebGLModule {
 
     geometry.draw(new BlackShader(this.gl), null);
   }
+  getInstructions(): string {
+    return "Paste in an image and watch it go down the drain!";
+  }
 
   private mouseEvents(canvas: HTMLCanvasElement) {
     canvas.onmousedown = (ev_down: MouseEvent) => {

@@ -86,6 +86,9 @@ export class ConwayModule implements WebGLModule {
       );
     }, 100);
   }
+  getInstructions(): string {
+    return "Draw and watch the pixels come to life! Pause with spacebar";
+  }
 
   private drawPoint(
     pixel_x: number,

@@ -27,6 +27,9 @@ export class SierpinskiCarpetModule implements WebGLModule {
 
     this.setup();
   }
+  getInstructions(): string {
+    return "Look Sierpinski Carpet!";
+  }
 
   private setup() {
     this.gl.canvas.width = this.width;

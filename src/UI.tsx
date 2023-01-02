@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useEffect } from "react";
 import { ModuleType } from "./utils/webgl";
+import Card from "@mui/material/Card";
 
 export default function UI(props) {
   const {
@@ -22,6 +23,7 @@ export default function UI(props) {
     onChangeSpacing,
     spacing,
     canvasRef,
+    instructions,
   } = props;
 
   useEffect(() => {
@@ -124,6 +126,9 @@ export default function UI(props) {
           imageRendering: "pixelated",
         }}
       ></canvas>
+      <Card sx={{ maxWidth: 300 }} style={{ position: "absolute" }}>
+        {instructions}
+      </Card>
     </div>
   );
 }

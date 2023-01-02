@@ -1,8 +1,9 @@
-import { ModuleSettings } from "../../data-structures/webgl";
+import { ModuleSettings } from "../../utils/webgl";
 
 export interface WebGLModule {
   render(): void;
   debugRender(): void;
+  getInstructions(): string;
 }
 
 interface WebGLModuleCtor {

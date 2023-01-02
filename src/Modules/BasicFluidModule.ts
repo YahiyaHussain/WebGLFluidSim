@@ -61,6 +61,9 @@ export class BasicFluidModule implements WebGLModule {
 
     geometry.draw(new BlackShader(this.gl), null);
   }
+  getInstructions(): string {
+    throw new Error("Method not implemented.");
+  }
 
   private mouseEvents(canvas: HTMLCanvasElement) {
     canvas.onmousedown = (ev_down: MouseEvent) => {
@@ -145,8 +148,6 @@ export class BasicFluidModule implements WebGLModule {
           );
           const gradientShader = new GradientShader(this.gl, rdx / 2, wrapType);
 
-
-          
           this.debouncer = new Debounced(() => {
             if (!this.dyeRenderSeq) {
               throw "Render sequence was undefined";
@@ -154,9 +155,7 @@ export class BasicFluidModule implements WebGLModule {
             if (!this.velocityRenderSeq) {
               throw "velocity render seq was undefined";
             }
-            this.velocityRenderSeq.apply(
-              advectionShader
-            ).apply()
+            this.velocityRenderSeq.apply(advectionShader).apply();
             this.velocityRenderSeq.apply(
               velocityAdvectionShader,
               (outputTexure: WebGLTexture) => {

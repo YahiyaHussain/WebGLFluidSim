@@ -28,6 +28,9 @@ export class SineModule implements WebGLModule {
 
     this.setup();
   }
+  getInstructions(): string {
+    return "Look Moving Colors";
+  }
 
   private setup() {
     this.gl.canvas.width = this.width;
